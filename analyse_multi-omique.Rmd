@@ -1,0 +1,176 @@
+---
+title: "Analyse multi-omique"
+author: "IMBERT Pierre"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output:
+  bookdown::html_document2:
+    df_print: paged
+    toc: yes
+    toc_depth: '3'
+    #toc_float: 
+    #  collapsed: true
+    theme: default # “default”, “cerulean”, “united”, “cosmo”
+    fig_caption: true
+header-includes:
+  \usepackage{float}
+editor_options:
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include=FALSE, cache=TRUE, fig.align="center", fig.show="asis", fig.pos="H")
+```
+
+```{r library_installation, message=FALSE, warning=FALSE, eval=F}
+install.packages("tidyverse")
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("mixOmics")
+BiocManager::install("timeOmics")
+```
+
+```{r library_load, message=FALSE, warning=FALSE}
+library("MASS")
+library("tidyverse")
+library("mixOmics")
+#library("timeOmics")
+```
+
+https://adcloud.compbio.ulaval.ca/index.php/s/SdDrKrkbq9QHCLn
+
+
+# Partie 1
+
+```{r}
+mirna = read.csv("./Data/mirna.csv", header = T)
+row.names(mirna) = mirna[,1]
+mirna = mirna[,-1]
+dim(mirna)
+
+mrna = read.csv("./Data/mrna.csv", header = T)
+row.names(mrna) = mrna[,1]
+mrna = mrna[,-1]
+dim(mrna)
+
+prot = read.csv("./Data/protein.csv", header = T)
+row.names(prot) = prot[,1]
+prot = prot[,-1]
+dim(prot)
+
+sample = read.csv("./Data/sample_group.csv", header = T)
+dim(sample)
+```
+
+## Analyse variation
+```{r}
+coeff_variation = function(vec){
+  return(sd(vec) / mean(vec))
+}
+truehist(apply(mirna, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - mirna")
+truehist(apply(mrna, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - mrna")
+truehist(apply(prot, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - protéine")
+```
+
+## Nettoyage des données
+```{r}
+mirna.c = mirna[,which(abs(apply(mirna, 2, coeff_variation)) >= 0.15)]
+dim(mirna)
+dim(mirna.c)
+
+mrna.c = mrna[,which(abs(apply(mrna, 2, coeff_variation)) >= 0.15)]
+dim(mrna)
+dim(mrna.c)
+
+prot.c = prot[,which(abs(apply(prot, 2, coeff_variation)) >= 0.15)]
+dim(prot)
+dim(prot.c)
+```
+
+## Google
+
+# Partie 2
+
+## 1. Single-omic: l’ACP avec mixOmics
+```{r}
+mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = F, scale = F)
+```
+Au vu de l'histogramme:
+  
+  - Une seule composante explique la majorité de la variabilité.
+  - Centrer & réduire les données peut être intéressant.
+
+```{r}
+mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = T, scale = T)
+mrna.pca$cum.var
+```
+
+Les 30 premières composantes expliquent 80% de la cariabilité et elles sont donc sélectionnées.
+
+```{r}
+mrna.pca = pca(X = mrna.c, ncomp = 30, center = T, scale = T)
+plotVar(mrna.pca, comp = c(1,2), var.names = F)
+plotVar(mrna.pca, comp = c(1,3), var.names = F)
+```
+
+## 2. Projection on Latent Structures
+
+### 2.1 Multiblock Projection on Latent Structures
+
+```{r}
+x.data = list(mrna = mrna.c, prot = prot.c)
+y.data = as.matrix(as.data.frame(mirna.c))
+```
+
+```{r}
+omics.block.pls = block.pls(X = x.data, Y = y.data, ncomp = 2)
+omics.block.pls
+
+selectVar(omics.block.pls, comp = 1)
+selectVar(omics.block.pls, comp = 2)
+
+plotVar(omics.block.pls)
+plotLoadings(omics.block.pls)
+network(omics.block.pls, cutoff = 0.65, name.save = "block-pls", save = "png")
+```
+
+```{r}
+design = matrix(1, ncol = length(x.data), nrow = length(x.data), 
+                dimnames = list(names(x.data), names(data)))
+diag(design) = 0
+design
+
+list.keepX = list(mrna = c(10, 5), prot = c(9, 4))
+list.keepY = c(7, 3)
+
+omics.block.spls = block.spls(X = x.data, Y = y.data, ncomp = c(2), keepX = list.keepX, 
+                              keepY = list.keepY, design = design) 
+
+omics.block.spls
+
+selectVar(omics.block.spls, comp = 1)
+selectVar(omics.block.spls, comp = 2)
+
+plotVar(omics.block.spls)
+plotLoadings(omics.block.spls)
+network(omics.block.spls, cutoff = 0.65, name.save = "block-spls", save = "png")
+
+mrna.selected = selectVar(omics.block.spls, comp = 1)$mrna$name
+prot.selected = selectVar(omics.block.spls, comp = 1)$prot$name
+mirna.selected = selectVar(omics.block.spls, comp = 1)$Y$name
+```
+
+Les variables sélectionnées sur la premières composantes sont:
+
+  - Mrna: `r mrna.selected`
+  - Protéine: `r prot.selected`
+  - Mirna: `r mirna.selected`
+
+## 3. Analyse supervisée : (s)PLS-DA
+
+## 4. Analyse supervisée : block-(s)PLS-DA
