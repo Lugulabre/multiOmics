@@ -23,7 +23,7 @@ text-align: justify}
 </style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, include=FALSE, cache=TRUE, fig.align="center", fig.show="asis", fig.pos="H")
+knitr::opts_chunk$set(echo = FALSE, include=TRUE, cache=TRUE, fig.align="center", fig.show="asis", fig.pos="H")
 ```
 
 ```{r library_installation, message=FALSE, warning=FALSE, eval=F}
@@ -48,24 +48,26 @@ https://adcloud.compbio.ulaval.ca/index.php/s/SdDrKrkbq9QHCLn
 # Partie 1
 
 ```{r}
-mirna = read.csv("./Data/mirna.csv", header = T)
+mirna = read.csv("ParisDiderot_202010/mirna.csv", header = T)
 row.names(mirna) = mirna[,1]
 mirna = mirna[,-1]
-dim(mirna)
+#dim(mirna)
 
-mrna = read.csv("./Data/mrna.csv", header = T)
+mrna = read.csv("ParisDiderot_202010/mrna.csv", header = T)
 row.names(mrna) = mrna[,1]
 mrna = mrna[,-1]
-dim(mrna)
+#dim(mrna)
 
-prot = read.csv("./Data/protein.csv", header = T)
+prot = read.csv("ParisDiderot_202010/protein.csv", header = T)
 row.names(prot) = prot[,1]
 prot = prot[,-1]
-dim(prot)
+#dim(prot)
 
-sample = read.csv("./Data/sample_group.csv", header = T)
-dim(sample)
+sample = read.csv("ParisDiderot_202010/sample_group.csv", header = T)
+#dim(sample)
 ```
+
+Pour les protéines, miRNA et gènes, on possède les données de 150 échantillons. On a ensuite 142 variables pour les protéines, 184 pour les miRNA et 200 pour les gènes.
 
 ## Analyse variation
 ```{r}
@@ -74,25 +76,33 @@ coeff_variation = function(vec){
 }
 truehist(apply(mirna, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - mirna")
 truehist(apply(mrna, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - mrna")
-truehist(apply(prot, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - protéine")
+truehist(apply(prot, 2, coeff_variation), xlab = "Distribution du coeffcicient de variation - proteine")
 ```
+
+On peut voir sur les histogrammes que le type de données possédant le plus de variabilité est le type protéine. En effet, sa variabilité est comprise entre -100 et 250, même si on peut observer qu'elle est comme les autres centrée vers 0.
 
 ## Nettoyage des données
 ```{r}
 mirna.c = mirna[,which(abs(apply(mirna, 2, coeff_variation)) >= 0.15)]
-dim(mirna)
-dim(mirna.c)
+#dim(mirna)
+#dim(mirna.c)
 
 mrna.c = mrna[,which(abs(apply(mrna, 2, coeff_variation)) >= 0.15)]
-dim(mrna)
-dim(mrna.c)
+#dim(mrna)
+#dim(mrna.c)
 
 prot.c = prot[,which(abs(apply(prot, 2, coeff_variation)) >= 0.15)]
-dim(prot)
-dim(prot.c)
+#dim(prot)
+#dim(prot.c)
 ```
 
-## Google
+Il nous reste 142 protéines, 174 gènes et 82 miRNA.
+
+## Gène le plus variable
+
+Le gène avec le plus grand coefficient de variance de notre jeu de données est PLCD4. La protéine codée par ce gène peut jouer un rôle dans la croissance et la prolifération cellulaire. Son expression peut donc notamment être un marqueur de cancer. 
+PLCD4 est situé sur le chromosome 2, et sa longueur est de 30749 nucléotides.
+La protéine correspondant à ce gène est Q9BRC7, d'une longueur de 762 nucléotides, mais n'est pas contenue dans notre jeu de données.
 
 # Partie 2
 
@@ -103,24 +113,47 @@ mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = F, scale = F)
 Au vu de l'histogramme:
   
   - Une seule composante explique la majorité de la variabilité.
-  - Centrer & réduire les données peut être intéressant.
+  - Il peut être intéressant de centrer-réduire les données pour mieux dégager la variabilité des données.
 
 ```{r}
 mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = T, scale = T)
 mrna.pca$cum.var
 ```
 
-Les 30 premières composantes expliquent 80% de la cariabilité et elles sont donc sélectionnées.
+Les 30 premières composantes expliquent 80% de la variabilité et elles sont donc sélectionnées.
 
 ```{r}
 mrna.pca = pca(X = mrna.c, ncomp = 30, center = T, scale = T)
-plotVar(mrna.pca, comp = c(1,2), var.names = F)
-plotVar(mrna.pca, comp = c(1,3), var.names = F)
+plotVar(mrna.pca, comp = c(1,2), var.names = T)
+#plotVar(mrna.pca, comp = c(1,3), var.names = T)
+var1pca = selectVar(mrna.pca, comp = 1)$value
+name.var1pca = row.names(var1pca)[0:10]
 ```
+
+Les dix variables contribuant le plus à l'axe 1 sont : `r name.var1pca`. Les graphiques représentant les variables sont actuellement très difficilement lisibles, on doit donc afficher les contributions des variables aux composantes à l'aide d'une commande.
+
+```{r}
+vec_col = as.numeric(as.factor(sample$Y))
+plotIndiv(mrna.pca, group = vec_col, legend = T, title = "Individus selon les 2 premieres composantes d'une pca")
+```
+
+On peut observer que la PCA sépare de façon assez distincte les individus des trois groupes selon les 2 premières composantes, malgré des frontières assez floues entre les groupes.
+
+```{r}
+spca.mrna = spca(mrna.c, ncomp = 3, center = TRUE, scale = TRUE,
+                    keepX = c(10, 5, 15))
+var1spca = selectVar(spca.mrna, comp = 1)$value
+name.var1spca = row.names(var1spca)
+var2spca = selectVar(spca.mrna, comp = 2)$value
+name.var2spca = row.names(var2spca)
+```
+
+Les gènes sélectionnés par la spca pour la première composante sont : `r name.var1spca`.
+Pour la seconde composante principale, on a retenu `r name.var2spca`.
 
 ## 2. Projection on Latent Structures
 
-### 2.1 Multiblock Projection on Latent Structures
+### 2.2 Multiblock Projection on Latent Structures
 
 ```{r}
 x.data = list(mrna = mrna.c, prot = prot.c)
@@ -129,10 +162,10 @@ y.data = as.matrix(as.data.frame(mirna.c))
 
 ```{r}
 omics.block.pls = block.pls(X = x.data, Y = y.data, ncomp = 2)
-omics.block.pls
+#omics.block.pls
 
-selectVar(omics.block.pls, comp = 1)
-selectVar(omics.block.pls, comp = 2)
+#selectVar(omics.block.pls, comp = 1)
+#selectVar(omics.block.pls, comp = 2)
 
 plotVar(omics.block.pls)
 plotLoadings(omics.block.pls)
@@ -143,18 +176,17 @@ network(omics.block.pls, cutoff = 0.65, name.save = "block-pls", save = "png")
 design = matrix(1, ncol = length(x.data), nrow = length(x.data), 
                 dimnames = list(names(x.data), names(data)))
 diag(design) = 0
-design
+#design
 
 list.keepX = list(mrna = c(10, 5), prot = c(9, 4))
 list.keepY = c(7, 3)
 
-omics.block.spls = block.spls(X = x.data, Y = y.data, ncomp = c(2), keepX = list.keepX, 
-                              keepY = list.keepY, design = design) 
+omics.block.spls = block.spls(X = x.data, Y = y.data, ncomp = c(2), keepX = list.keepX, keepY = list.keepY, design = design) 
 
-omics.block.spls
+#omics.block.spls
 
-selectVar(omics.block.spls, comp = 1)
-selectVar(omics.block.spls, comp = 2)
+#selectVar(omics.block.spls, comp = 1)
+#selectVar(omics.block.spls, comp = 2)
 
 plotVar(omics.block.spls)
 plotLoadings(omics.block.spls)
@@ -173,4 +205,38 @@ Les variables sélectionnées sur la premières composantes sont:
 
 ## 3. Analyse supervisée : (s)PLS-DA
 
+```{r}
+plsda.mrna = plsda(mrna.c, sample$Y, ncomp = 2)
+plotIndiv(plsda.mrna, legend = T,
+          title = "Individus selon les 2 premieres composantes d'une PLS-DA")
+```
+
+Par rapport à la PCA, on peut considérer que la PLS-DA permet de mieux retrouver nos trois groupes d'échantillons sur ce graphique par rapport aux deux premières composantes principales. En effet, les trois groupes sont ici clairement distincts dans l'espace du graphique, et les frontières entre groupes sont bien plus marquées. Il semblerait donc que la variabilité des données calculée par la PLS-DA permet de mieux expliquer les différences génétiques entre les groupes de nos échantillons.
+
 ## 4. Analyse supervisée : block-(s)PLS-DA
+
+```{r}
+list.of.all = list(mrna = mrna.c, prot = prot.c, mirna = mirna.c)
+block.splsda.all = block.splsda(list.of.all,
+                                Y = sample$Y, ncomp = 5)
+plotIndiv(block.splsda.all, legend = T)
+```
+
+```{r}
+perf.splsda = perf(block.splsda.all)
+```
+
+```{r}
+#Block PLS-DA avec keepX
+list.keepX = list(mrna = c(15,10), prot = c(15,10), mirna = c(15,10))
+block.splsda.keepX = block.splsda(list.of.all,
+                                Y = sample$Y, ncomp = 2,
+                                keepX = list.keepX)
+plotIndiv(block.splsda.keepX, legend = T)
+```
+
+```{r}
+# Circosplot
+circosPlot(block.splsda.keepX, cutoff = 0.5)
+```
+

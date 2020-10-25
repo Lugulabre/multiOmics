@@ -4,16 +4,16 @@ require(MASS)
 library(mixOmics)
 
 # Préparation des données
-mirna = read.csv("mirna.csv")
+mirna = read.csv("ParisDiderot_202010/mirna.csv")
 row.names(mirna) = mirna[,1]
 mirna = mirna[,-1]
-mrna = read.csv("mrna.csv")
+mrna = read.csv("ParisDiderot_202010/mrna.csv")
 row.names(mrna) = mrna[,1]
 mrna = mrna[,-1]
-protein = read.csv("protein.csv")
+protein = read.csv("ParisDiderot_202010/protein.csv")
 row.names(protein) = protein[,1]
 protein = protein[,-1]
-sample_group = read.csv("sample_group.csv")
+sample_group = read.csv("ParisDiderot_202010/sample_group.csv")
 
 # Fonction de coefficient de variation
 coeff_var = function(vec_val){
@@ -52,7 +52,7 @@ selectVar(pca.mrna, comp = 1)$value
 spca.mrna = spca(new_mrna, ncomp = 3, center = TRUE, scale = TRUE,
                     keepX = c(10, 5, 15))
 plotVar(spca.mrna)
-plotIndiv(spca.mrna, col = vec_col+1)
+plotIndiv(spca.mrna, group = vec_col, legend = T)
 
 # Gènes sélectionnés
 selectVar(spca.mrna, comp = 1)$value
@@ -61,11 +61,12 @@ selectVar(spca.mrna, comp = 2)$value
 
 # PLS-DA
 plsda.mrna = plsda(new_mrna, sample_group$Y, ncomp = 2)
-plotIndiv(plsda.mrna)
+plotIndiv(plsda.mrna, legend = T,
+          title = "Individus selon les 2 premieres composantes d'une PLS-DA")
 plotVar(plsda.mrna)
 splsda.mrna = splsda(new_mrna, sample_group$Y, ncomp = 2,
                      keepX = c(10, 10))
-plotIndiv(splsda.mrna)
+plotIndiv(splsda.mrna, legend = T)
 plotVar(splsda.mrna)
 selectVar(splsda.mrna, comp = 1)$value
 selectVar(splsda.mrna, comp = 2)$value
