@@ -78,8 +78,10 @@ block.splsda.all = block.splsda(list.of.all,
                                 Y = sample_group$Y, ncomp = 5)
 plotIndiv(block.splsda.all)
 plotVar(block.splsda.all)
-perf.splsda = perf(block.splsda.all)
-
+perf.splsda = perf(block.splsda.all, folds = 10, nrepeat = 10)
+plot(perf.splsda)
+plot(perf.splsda$error.rate.all)
+legend("topright")
 #Block PLS-DA avec keepX
 list.keepX = list(mrna = c(15,10), prot = c(15,10), mirna = c(15,10))
 block.splsda.keepX = block.splsda(list.of.all,
@@ -91,5 +93,6 @@ plotVar(block.splsda.keepX)
 
 # Circosplot
 circosPlot(block.splsda.keepX, cutoff = 0.5)
+title("circos plot proteine mirna et mrna")
 
 # dev.off()

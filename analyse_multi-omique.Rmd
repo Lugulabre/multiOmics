@@ -273,6 +273,7 @@ plotIndiv(block.splsda.all, legend = T)
 
 ```{r}
 perf.splsda = perf(block.splsda.all)
+plot(perf.splsda)
 ```
 
 ```{r}
@@ -287,5 +288,6 @@ plotIndiv(block.splsda.keepX, legend = T)
 ```{r}
 # Circosplot
 circosPlot(block.splsda.keepX, cutoff = 0.5)
+title("circos plot proteine mirna et mrna")
 ```
 
