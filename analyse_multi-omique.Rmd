@@ -27,17 +27,17 @@ knitr::opts_chunk$set(echo = FALSE, include=TRUE, cache=TRUE, fig.align="center"
 ```
 
 ```{r library_installation, message=FALSE, warning=FALSE, eval=F}
-install.packages("tidyverse")
+#install.packages("tidyverse")
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("mixOmics")
-BiocManager::install("timeOmics")
+#BiocManager::install("timeOmics")
 ```
 
 ```{r library_load, message=FALSE, warning=FALSE}
 library("MASS")
-library("tidyverse")
+#library("tidyverse")
 library("mixOmics")
 #library("timeOmics")
 ```
@@ -134,7 +134,7 @@ Les dix variables contribuant le plus à l'axe 1 sont : `r name.var1pca`. Les gr
 
 ```{r}
 vec_col = as.numeric(as.factor(sample$Y))
-plotIndiv(mrna.pca, group = vec_col, legend = T, title = "Individus selon les 2 premieres composantes d'une pca")
+plotIndiv(mrna.pca, group = vec_col, legend = T, title = "Individus selon composantes 1-2 pca")
 ```
 
 On peut observer que la PCA sépare de façon assez distincte les individus des trois groupes selon les 2 premières composantes, malgré des frontières assez floues entre les groupes.
@@ -151,9 +151,54 @@ name.var2spca = row.names(var2spca)
 Les gènes sélectionnés par la spca pour la première composante sont : `r name.var1spca`.
 Pour la seconde composante principale, on a retenu `r name.var2spca`.
 
-## 2. Projection on Latent Structures
+## 2.1 Projection on Latent Structures
 
-### 2.2 Multiblock Projection on Latent Structures
+```{r}
+pls.result = pls(X = mrna.c, Y = prot.c, ncomp = 3)
+```
+
+```{r, include=FALSE}
+
+png("img/scatter_plot_pls.png")
+plot(pls.result$variates$X[,2],pls.result$variates$X[,3], col = vec_col+1, ylab = "composante 3",xlab = "composante 2", main = "comparaisons des composantes 1 et 2 avec les groupes\n d'echantillons affiches en couleur.")
+legend(x = 10, y = 8, legend = names(table(sample$Y)), col = c(2,3,4), lty = 1)
+dev.off()
+
+png("img/arrow_plot_pls.png")
+plotArrow(pls.result, comp = c(1,3), X.label =  "comp1", Y.label = "comp3",col = vec_col+1, title = "Arrow plot des composantes 1 et 3")
+legend(x = 5, y = 9, legend = names(table(sample$Y)), col = c(2,3,4), lty = 1)
+dev.off()
+dev.off()
+```
+
+<img src="img/scatter_plot_pls.png" alt="">
+
+<img src="img/arrow_plot_pls.png" alt="">
+
+```{r, include=FALSE}
+spls.result = spls(X = mrna.c, Y = prot.c, ncomp = 3, keepX  = c(10,5,1), keepY = c(9,5,1) )
+
+var3spls = c(selectVar(spls.result, comp = 3)$X$name,
+             selectVar(spls.result, comp = 3)$Y$name)
+
+png("img/cim_plot_spls.png")
+cim(spls.result)
+dev.off()
+```
+
+Les variables retenues pour la troisième composante sont `r var3spls`.
+
+<img src="img/cim_plot_spls.png" alt="">
+
+```{r, include=FALSE}
+network(spls.result,cutoff = 0.65, name.save = "img/network_plot_spls", save = "png")
+```
+
+<img src="img/network_plot_spls.png" alt="">
+
+Sur la spls, on peut observer 7 clusters différents possédant une corrélation supérieure à 0.65 ou inférieure à -0.65 (3 protéines et 4 gènes).
+
+## 2.2 Multiblock Projection on Latent Structures
 
 ```{r}
 x.data = list(mrna = mrna.c, prot = prot.c)
@@ -169,8 +214,10 @@ omics.block.pls = block.pls(X = x.data, Y = y.data, ncomp = 2)
 
 plotVar(omics.block.pls)
 plotLoadings(omics.block.pls)
-network(omics.block.pls, cutoff = 0.65, name.save = "block-pls", save = "png")
+network(omics.block.pls, cutoff = 0.65, name.save = "img/block-pls", save = "png")
 ```
+
+<img src="img/block-pls.png" alt="">
 
 ```{r}
 design = matrix(1, ncol = length(x.data), nrow = length(x.data), 
@@ -190,14 +237,16 @@ omics.block.spls = block.spls(X = x.data, Y = y.data, ncomp = c(2), keepX = list
 
 plotVar(omics.block.spls)
 plotLoadings(omics.block.spls)
-network(omics.block.spls, cutoff = 0.65, name.save = "block-spls", save = "png")
+network(omics.block.spls, cutoff = 0.65, name.save = "img/block-spls", save = "png")
 
 mrna.selected = selectVar(omics.block.spls, comp = 1)$mrna$name
 prot.selected = selectVar(omics.block.spls, comp = 1)$prot$name
 mirna.selected = selectVar(omics.block.spls, comp = 1)$Y$name
 ```
 
-Les variables sélectionnées sur la premières composantes sont:
+<img src="img/block-spls.png" alt="">
+
+Les variables sélectionnées sur la première composante sont:
 
   - Mrna: `r mrna.selected`
   - Protéine: `r prot.selected`
@@ -208,7 +257,7 @@ Les variables sélectionnées sur la premières composantes sont:
 ```{r}
 plsda.mrna = plsda(mrna.c, sample$Y, ncomp = 2)
 plotIndiv(plsda.mrna, legend = T,
-          title = "Individus selon les 2 premieres composantes d'une PLS-DA")
+          title = "Individus selon composantes 1-2 PLS-DA")
 ```
 
 Par rapport à la PCA, on peut considérer que la PLS-DA permet de mieux retrouver nos trois groupes d'échantillons sur ce graphique par rapport aux deux premières composantes principales. En effet, les trois groupes sont ici clairement distincts dans l'espace du graphique, et les frontières entre groupes sont bien plus marquées. Il semblerait donc que la variabilité des données calculée par la PLS-DA permet de mieux expliquer les différences génétiques entre les groupes de nos échantillons.
