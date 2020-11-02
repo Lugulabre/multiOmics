@@ -76,9 +76,15 @@ coeff_variation = function(vec){
 ```
 
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Distribution du coefficient de variation dans les 3 blocs - mirna, mrna & protéine"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Distribution du coefficient de variation dans le bloc mirna"}
 truehist(apply(mirna, 2, coeff_variation), xlab = "mirna", col="#8b1538")
+```
+
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Distribution du coefficient de variation dans le blocs mrna"}
 truehist(apply(mrna, 2, coeff_variation), xlab = "mrna", col="#8b1538")
+```
+
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Distribution du coefficient de variation dans le bloc protéine"}
 truehist(apply(prot, 2, coeff_variation), xlab = "Proteine", col="#8b1538")
 ```
 
@@ -114,7 +120,7 @@ La protéine correspondant à ce gène est Q9BRC7, d'une longueur de 762 nucléo
 
 L'ACP est une méthode d'analyse statistique et de réduction des données, permettant de calculer des composantes maximisant la variabilité des données étudiées. On peut ensuite évaluer si les composantes calculées permettent de caractériser correctement la variabilité des données (par exemple s'il est possible de retrouver certains groupes séparés distinctement par les composantes), et d'identifier les variables les plus importantes participant à ces composantes.
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Expliquation de la variabilité par les différente composante - avec center & scale false"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Explication de la variabilité par les différentes composantes - avec center & scale false"}
 mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = F, scale = F)
 mrna.pca
 ```
@@ -123,7 +129,7 @@ Au vu de l'histogramme:
   - Une seule composante explique la majorité de la variabilité.
   - Il peut être intéressant de centrer-réduire les données pour mieux dégager la variabilité des données.
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Expliquation de la variabilité par les différente composante - avec center & scale true"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Explication de la variabilité par les différentes composantes - avec center & scale true"}
 mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = T, scale = T)
 ```
 
@@ -140,7 +146,7 @@ var1pca = selectVar(mrna.pca, comp = 1)$value
 name.var1pca = row.names(var1pca)[0:10]
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="PCA des gènes"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des variables (ici les gènes) selon les composantes 1 et 2 d'une ACP"}
 plotVar(mrna.pca, comp = c(1,2), var.names = T, col = "#8b1538")
 ```
 
@@ -150,7 +156,7 @@ Les dix variables contribuant le plus à l'axe 1 sont : `r name.var1pca`. Les gr
 vec_col = as.numeric(as.factor(sample$Y))
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="PIndividus selon composantes 1-2 pcas"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des individus selon les composantes 1 et 2 d'une ACP"}
 plotIndiv(mrna.pca, group = vec_col, legend = T, title = "")
 ```
 
@@ -168,7 +174,7 @@ name.var2spca = row.names(var2spca)
 Les gènes sélectionnés par la spca pour la première composante sont : `r name.var1spca`.
 Pour la seconde composante principale, on a retenu `r name.var2spca`.
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Spase PCA des gènes"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des gènes principaux selon les composantes 1 et 2 d'une Sparse-PCA"}
 plotVar(spca.mrna, comp = c(1,2), var.names = T, col = "#8b1538", cex=3.9)
 ```
 
@@ -192,11 +198,11 @@ legend(x = 5, y = 9, legend = names(table(sample$Y)), col = c(2,3,4), lty = 1)
 dev.off()
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Comparaisons des composantes 1 et 2 avec les groupes\n d'echantillons affiches en couleur"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des individus colorés en fonction de leur groupe selon les composantes 2 et 3 d'une PLS"}
 knitr::include_graphics("img/scatter_plot_pls.png")
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Arrow plot des composantes 1 et 3"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Arrow plot des individus colorés en fonction de leur groupe selon les composantes 1 et 3 d'une PLS"}
 knitr::include_graphics("img/arrow_plot_pls.png")
 ```
 
@@ -213,7 +219,7 @@ dev.off()
 
 Les variables retenues pour la troisième composante sont `r var3spls`.
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Heatmap ..."}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Matrice de corrélation entre l'expression des gènes et l'expression des protéines calculée à partir d'une Sparse-PLS"}
 knitr::include_graphics("img/cim_plot_spls.png")
 ```
 
@@ -222,7 +228,7 @@ knitr::include_graphics("img/cim_plot_spls.png")
 network(spls.result,cutoff = 0.65, name.save = "img/network_plot_spls", save = "png")
 ```
 
-```{r, include=T, fig.cap="Network ..."}
+```{r, include=T, fig.cap="Network plot des gènes et protéines les plus corrélés (|p| > 0.65) à partir des résultats d'une SPLS"}
 knitr::include_graphics("img/network_plot_spls.png")
 ```
 
@@ -246,7 +252,7 @@ selectVar(omics.block.pls, comp = 2)
 network(omics.block.pls, cutoff = 0.65, name.save = "img/block-pls", save = "png")
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Block pls ..."}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Résultats d'une block pls sur les protéines, mrna et mirna"}
 plotVar(omics.block.pls)
 plotLoadings(omics.block.pls)
 knitr::include_graphics("img/block-pls.png")
@@ -274,7 +280,7 @@ prot.selected = selectVar(omics.block.spls, comp = 1)$prot$name
 mirna.selected = selectVar(omics.block.spls, comp = 1)$Y$name
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Block spls ..."}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Résultats d'une block spls sur les protéines, mrna et mirna"}
 plotVar(omics.block.spls)
 plotLoadings(omics.block.spls)
 knitr::include_graphics("img/block-spls.png")
@@ -292,7 +298,7 @@ Les variables sélectionnées sur la première composante sont:
 plsda.mrna = plsda(mrna.c, sample$Y, ncomp = 2)
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Individus selon composantes 1-2 PLS-DA"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des individus selon les composantes 1 et 2 d'une PLS-DA"}
 plotIndiv(plsda.mrna, legend = T, title = "")
 ```
 
@@ -306,7 +312,7 @@ block.splsda.all = block.splsda(list.of.all,
                                 Y = sample$Y, ncomp = 5)
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Block splsda all"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des individus selon les composantes 1 et 2 d'une block spls-da réalisée sur les gènes, mirna et protéines"}
 plotIndiv(block.splsda.all, legend = T)
 ```
 
@@ -323,14 +329,13 @@ block.splsda.keepX = block.splsda(list.of.all,
                                 keepX = list.keepX)
 ```
 
-```{r, include=T, out.width="80%", out.height="80%", fig.cap="Block splsda après sélection"}
+```{r, include=T, out.width="80%", out.height="80%", fig.cap="Projection des individus selon les composantes 1 et 2 d'une block spls-da réalisée sur les gènes, mirna et protéines après sélection d'un nombre limité de variables pour chaque jeu de données"}
 plotIndiv(block.splsda.keepX, legend = T)
 ```
 
-```{r, include=T, out.width="100%", out.height="100%", fig.cap="Circosplot"}
+```{r, include=T, out.width="100%", out.height="100%", fig.cap="Circosplot des protéines, mirna et mrna avec un cutoff de 0.5"}
 # Circosplot
 circosPlot(block.splsda.keepX, cutoff = 0.5)
-title("circos plot proteine mirna et mrna")
 ```
 
 # Partie III
@@ -347,12 +352,13 @@ exposition mère impacte enfants ?
 analyse en heatmap (spls, cim -> non, que transcriptome)
 P.heatmap
 acp ? variables
-répérer les points communément sur ou sous exprimés
+repérer les points communément sur ou sous exprimés
 
 
 ## Question 2
 
 volcano plot p-value up down des molécules
 classification
-
+diversité alpha beta (évaluation)
+krone ? (semble pas ouf)
 
