@@ -44,7 +44,7 @@ library("mixOmics")
 https://adcloud.compbio.ulaval.ca/index.php/s/SdDrKrkbq9QHCLn
 
 
-# Partie 1
+# Partie I
 
 ```{r}
 mirna = read.csv("ParisDiderot_202010/mirna.csv", header = T)
@@ -108,9 +108,12 @@ Le gène avec le plus grand coefficient de variance de notre jeu de données est
 PLCD4 est situé sur le chromosome 2, et sa longueur est de 30749 nucléotides.
 La protéine correspondant à ce gène est Q9BRC7, d'une longueur de 762 nucléotides, mais n'est pas contenue dans notre jeu de données.
 
-# Partie 2
+# Partie II
 
 ## 1. Single-omic: l’ACP avec mixOmics
+
+L'ACP est une méthode d'analyse statistique et de réduction des données, permettant de calculer des composantes maximisant la variabilité des données étudiées. On peut ensuite évaluer si les composantes calculées permettent de caractériser correctement la variabilité des données (par exemple s'il est possible de retrouver certains groupes séparés distinctement par les composantes), et d'identifier les variables les plus importantes participant à ces composantes.
+
 ```{r, include=T, out.width="80%", out.height="80%", fig.cap="Expliquation de la variabilité par les différente composante - avec center & scale false"}
 mrna.pca = tune.pca(X = mrna.c, ncomp = 50, center = F, scale = F)
 mrna.pca
@@ -170,6 +173,8 @@ plotVar(spca.mrna, comp = c(1,2), var.names = T, col = "#8b1538", cex=3.9)
 ```
 
 ## 2.1 Projection on Latent Structures
+
+La PLS est une méthode statistique permettant de traiter différentes matrices de données. Contrairement à l'ACP, qui ne peut analyser qu'un jeu de données à la fois, on va ici pouvoir dégager des composantes - dites latentes - maximisant la covariance entre nos deux matrices d'entrée. Sur notre analyse, on va ainsi pouvoir dégager via les composantes les possibles corrélations entre l'expression génique et l'expression protéique.
 
 ```{r}
 pls.result = pls(X = mrna.c, Y = prot.c, ncomp = 3)
@@ -327,4 +332,27 @@ plotIndiv(block.splsda.keepX, legend = T)
 circosPlot(block.splsda.keepX, cutoff = 0.5)
 title("circos plot proteine mirna et mrna")
 ```
+
+# Partie III
+
+## Question 1
+
+transcriptomique
+Groupe témoin échantillon sans pollution ?
+traiter différemment la mère et les enfants
+attention variations entre famille
+évaluer la variance de nos échantillons
+exposition mère impacte enfants ?
+
+analyse en heatmap (spls, cim -> non, que transcriptome)
+P.heatmap
+acp ? variables
+répérer les points communément sur ou sous exprimés
+
+
+## Question 2
+
+volcano plot p-value up down des molécules
+classification
+
 
