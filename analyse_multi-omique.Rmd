@@ -362,3 +362,16 @@ classification
 diversité alpha beta (évaluation)
 krone ? (semble pas ouf)
 
+Nous travaillons ici sur des microbiotes de souris ayant subi ou non un traitement. On a accès pour chaque souris à deux types de données omiques : métagénomiques (données 16S du microbiote) et métabolomiques (décompte de molécules du métabolome).
+Donc -> pls ou pls-da
+covariance entre data métagénome et métabolome
+analyse individuelle sur métagénome -> diversité alpha / béta, composition métagénome
+
+Il est aussi nécessaire dans ce cas d'effectuer une analyse multiomique. Les différentes informations apportées par les analyses simple-omique nous permettent de mettre en lumière les différences entre les groupes de souris, mais il pourrait être intéressant dans un second temps d'évaluer la covariance de ces données.
+En effet, les données métagénomiques nous permettent de connaître la composition du microbiote des souris en terme de micro-organisme, et les données métabolomiques donnent une analyse sur la composition des molécules métaboliques du milieu intestinal probablement.
+Pour déterminer plus précisément les impacts du traitement sur le milieu intestinal, il est donc nécessaire d'utiliser l'outil de "Projection on Latent Structure". On va ainsi pouvoir trouver les composantes maximisant la covariance entre métagénomique et métabolomique. On peut ainsi effectuer une sparse PLS sur les souris traitées d'un côté et non traitées de l'autre.
+Un cim plot pourra ainsi être utilisé pour visualiser la variance entre nos différentes variables, ainsi qu'un network plot pour représenter les 16S et les métabolites les plus corrélés.
+Ces deux représentations graphiques peuvent être utilisées pour les souris traitées et non traitées, pour ensuite comparer nos deux résultats, et ainsi évaluer si le traitement a une influence sur la covariance entre les données omiques.
+
+
+
