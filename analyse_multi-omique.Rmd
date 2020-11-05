@@ -385,20 +385,10 @@ avec:
 - matrix: matrice des données transcriptomiques, poids et taille
 - Y: variable qualitative taux d'exposition à 3 classes - faible, moyen & élevé - transformée en vecteur one-hot
 
-
-
-transcriptomique
-Groupe témoin échantillon sans pollution ?
-traiter différemment la mère et les enfants
-attention variations entre famille
-évaluer la variance de nos échantillons
-exposition mère impacte enfants ?
-
-analyse en heatmap (spls, cim -> non, que transcriptome)
-P.heatmap
-acp ? variables
-repérer les points communément sur ou sous exprimés
-
+Avec les résultats de cette analyse, nous pouvons comme précédemment projeter les individus sur un graphique à deux dimensions, selon les composantes expliquant la plus grande variabilité, et encore une fois colorer les individus selon les groupes.
+On pourra ainsi comparer nos deux graphiques et observer si l'un des deux permet de mieux visualiser la séparation entre nos groupes selon la covariance entre données calculée par la méthode.
+Il est ensuite possible de trouver, à l'intérieur des composantes calculées, quelles sont les variables participant le plus, et donc celles sur lesquelles il est important de se concentrer pour comprendre l'effet de la pollution sur les ours polaires.
+On pourra ainsi identifier si l'expression de certains arn messagers a été impactée par le niveau de pollution, ou si certaines données cliniques se retrouveraient modifiées (impact significatif sur le poids ou la taille des ours, en prenant évidemment en compte le fait que les ours soient enfants ou adultes).
 
 ## Question 2
 
@@ -413,6 +403,7 @@ Cependant nous possédons également des données métabolomiques. En approche s
 
 Cependant, au vu des outils disponibles, il apparaît nécessaire et très informatif d'effectuer également une analyse multiomique. Les différentes informations apportées par les analyses simple-omiques nous permettent de mettre en lumière les différences entre les groupes de souris, mais il pourrait être intéressant dans un second temps d'évaluer la covariance de ces données.
 En effet, les données métagénomiques nous permettent de connaître la composition du microbiote des souris en termes de micro-organisme, et les données métabolomiques donnent une analyse sur la composition des molécules métaboliques du milieu intestinal probablement.
+
 Pour déterminer plus précisément les impacts du traitement sur le milieu intestinal, il est donc nécessaire d'utiliser l'outil de "Projection on Latent Structure". On va ainsi pouvoir trouver les composantes maximisant la covariance entre métagénomique et métabolomique. On peut ainsi effectuer une sparse PLS sur les souris traitées d'un côté et non traitées de l'autre.
 Un cim plot pourra ainsi être utilisé pour visualiser la variance entre nos différentes variables, ainsi qu'un network plot pour représenter les 16S et les métabolites les plus corrélés.
 Ces deux représentations graphiques peuvent être utilisées pour les souris traitées et non traitées, pour ensuite comparer nos deux résultats, et ainsi évaluer si le traitement a une influence sur la covariance entre les données omiques.
