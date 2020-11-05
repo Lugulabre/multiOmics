@@ -357,6 +357,11 @@ repérer les points communément sur ou sous exprimés
 
 ## Question 2
 
+En nous appuyant sur les données métagénomiques ou métabolomiques entre les groupes témoins et traité. Nous pouvons déterminer, par une classification, quel groupe de gène ou protéine, ont la même intensité d'expression et si l'expression au sein d'un même groupe change en présence de médicament. Ainsi nous pouvons déterminer l'impact d'un traitement sur l'expression d'un gène. Et,les gênes, groupe de gêne, dont l'expréssions réagi de la même façon face au traitement.
+
+La présentation des résultats adéquats serais avec des heatmap d'expression et de différence d'expression, ainsi que des arbres de classification.
+
+
 volcano plot p-value up down des molécules
 classification
 diversité alpha beta (évaluation)
