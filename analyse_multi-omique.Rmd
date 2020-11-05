@@ -342,17 +342,25 @@ circosPlot(block.splsda.keepX, cutoff = 0.5)
 
 ## Question 1
 
-Nous travaillons ici sur les effets de l'exposition à des polluants sur la santé des ours polaires. On a accès pour une vingtaine de trios (un mère et sa portée de deux enfants) à deux types de données omiques:
+Nous travaillons ici sur les effets de l'exposition à des polluants sur la santé des ours polaires. On a accès pour une vingtaine de trios (une mère et sa portée de deux enfants) à deux types de données omiques:
 
-- Données transciptomiques
-- Diverses mesures cliniques numériques - on suppose que ces données sont le poids, la taille & le taux d'exposition.
+- des données transcriptomiques
+- Diverses mesures cliniques numériques - on va supposer que ces données sont par exemple le poids, la taille...
+- On va également admettre que l'on a accès au taux d'exposition aux polluants pour chaque ours polaire.
 
-> Projection on Latent Structures
+On choisit de considérer le taux d'exposition au polluant comme une donnée qualitative à trois niveaux, pour diviser nos données sur les ours polaires en trois groupes :
 
-La PLS va nous permettre de dégager via les composantes les possibles corrélations entre l'expression génétique et les mesures cliniques.
+- Ours faiblement exposé
+- Ours moyennement exposé
+- Ours fortement exposé
+
+
+> Projection on Latent Structures (PLS)
+
+La PLS va nous permettre de dégager via les composantes latentes calculées les possibles corrélations entre les ARN messagers et les mesures cliniques.
 
 ```
-pls.result = pls(X = rna, Y = data, ncomp = 3)
+pls.result = pls(X = mrna, Y = clinical_data)
 ```
 
 avec:
@@ -360,14 +368,14 @@ avec:
 - rna: matrice des données transcriptomiques
 - data: matrice mesures cliniques
 
-> Projection on Latent Structures
+Cette approche peut nous permettre dans un premier temps d'évaluer la covariance entre nos deux types de données, et d'observer si, sans connaître les groupes de sortie, on peut tout de même retrouver les groupes exposés à de plus ou moins forts taux de pollution.
+Il est possible pour savoir si ces groupes sont retrouvés de représenter nos individus sur un graphe selon les deux premières composantes calculées par la pls par exemple, et de colorer les individus selon les groupes choisis.
 
-Dans un deuxième temps, on va essayer de déterminer si les données transciptomiques et les diverses mesures cliniques (poides et taille) permettent de retrouver nos trois groupes d'échantillon qui sont :
+> PLS-Discriminant Analysis (PLS-DA)
 
-- Ours faiblement exposé
-- Ours moyennement exposé
-- Ours fortement exposé
+Étant donné que l'on a choisi de représenter l'exposition au polluant de manière qualitative, il est possible de réaliser une analyse supervisée de nos données via une pls-da pour observer la covariance des données disponibles expliquant au mieux la répartition des trois groupes choisis.
 
+On a donc,
 ```
 plsda.result = plsda(matrix, Y, ncomp = 2)
 ```
@@ -375,37 +383,27 @@ plsda.result = plsda(matrix, Y, ncomp = 2)
 avec:
 
 - matrix: matrice des données transcriptomiques, poids et taille
-- Y: variable qualitative taux d'exposition à 3 classes - faible, moyen & élevé
+- Y: variable qualitative taux d'exposition à 3 classes - faible, moyen & élevé - transformée en vecteur one-hot
 
-
-
-transcriptomique
-Groupe témoin échantillon sans pollution ?
-traiter différemment la mère et les enfants
-attention variations entre famille
-évaluer la variance de nos échantillons
-exposition mère impacte enfants ?
-
-analyse en heatmap (spls, cim -> non, que transcriptome)
-P.heatmap
-acp ? variables
-repérer les points communément sur ou sous exprimés
-
+Avec les résultats de cette analyse, nous pouvons comme précédemment projeter les individus sur un graphique à deux dimensions, selon les composantes expliquant la plus grande variabilité, et encore une fois colorer les individus selon les groupes.
+On pourra ainsi comparer nos deux graphiques et observer si l'un des deux permet de mieux visualiser la séparation entre nos groupes selon la covariance entre données calculée par la méthode.
+Il est ensuite possible de trouver, à l'intérieur des composantes calculées, quelles sont les variables participant le plus, et donc celles sur lesquelles il est important de se concentrer pour comprendre l'effet de la pollution sur les ours polaires.
+On pourra ainsi identifier si l'expression de certains arn messagers a été impactée par le niveau de pollution, ou si certaines données cliniques se retrouveraient modifiées (impact significatif sur le poids ou la taille des ours, en prenant évidemment en compte le fait que les ours soient enfants ou adultes).
 
 ## Question 2
 
-volcano plot p-value up down des molécules
-classification
-diversité alpha beta (évaluation)
-krone ? (semble pas ouf)
+> Approche simple omique
 
 Nous travaillons ici sur des microbiotes de souris ayant subi ou non un traitement. On a accès pour chaque souris à deux types de données omiques : métagénomiques (données 16S du microbiote) et métabolomiques (décompte de molécules du métabolome).
-Donc -> pls ou pls-da
-covariance entre data métagénome et métabolome
-analyse individuelle sur métagénome -> diversité alpha / béta, composition métagénome
 
-Il est aussi nécessaire dans ce cas d'effectuer une analyse multiomique. Les différentes informations apportées par les analyses simple-omique nous permettent de mettre en lumière les différences entre les groupes de souris, mais il pourrait être intéressant dans un second temps d'évaluer la covariance de ces données.
-En effet, les données métagénomiques nous permettent de connaître la composition du microbiote des souris en terme de micro-organisme, et les données métabolomiques donnent une analyse sur la composition des molécules métaboliques du milieu intestinal probablement.
+Il peut être intéressant dans ce cas d'effectuer une première approche simple omique, par exemple sur nos données de métagénomique. En effet, sur chacun des deux groupes (traité et non-traité), certaines métriques peuvent être analysés via nos données 16S. On peut ici admettre que l'on a à notre disposition une table d'OTU. À partir de cette table il est possible de calculer les diversité alpha, bêta, ainsi que les tables d'abondance de nos deux échantillons. On peut alors comparer ces résultats pour observer si le microbiote intestinal a été impacté par le traitement et dans quelle mesure.
+Cependant nous possédons également des données métabolomiques. En approche simple omique, nous pouvons déterminer quels sont les molécules présentes selon une même intensité, et si l'on observe des différences de comptage significative au contact du traitement.
+
+> Approche multiomique
+
+Cependant, au vu des outils disponibles, il apparaît nécessaire et très informatif d'effectuer également une analyse multiomique. Les différentes informations apportées par les analyses simple-omiques nous permettent de mettre en lumière les différences entre les groupes de souris, mais il pourrait être intéressant dans un second temps d'évaluer la covariance de ces données.
+En effet, les données métagénomiques nous permettent de connaître la composition du microbiote des souris en termes de micro-organisme, et les données métabolomiques donnent une analyse sur la composition des molécules métaboliques du milieu intestinal probablement.
+
 Pour déterminer plus précisément les impacts du traitement sur le milieu intestinal, il est donc nécessaire d'utiliser l'outil de "Projection on Latent Structure". On va ainsi pouvoir trouver les composantes maximisant la covariance entre métagénomique et métabolomique. On peut ainsi effectuer une sparse PLS sur les souris traitées d'un côté et non traitées de l'autre.
 Un cim plot pourra ainsi être utilisé pour visualiser la variance entre nos différentes variables, ainsi qu'un network plot pour représenter les 16S et les métabolites les plus corrélés.
 Ces deux représentations graphiques peuvent être utilisées pour les souris traitées et non traitées, pour ensuite comparer nos deux résultats, et ainsi évaluer si le traitement a une influence sur la covariance entre les données omiques.
