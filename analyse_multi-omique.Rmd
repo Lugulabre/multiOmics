@@ -342,6 +342,43 @@ circosPlot(block.splsda.keepX, cutoff = 0.5)
 
 ## Question 1
 
+Nous travaillons ici sur les effets de l'exposition à des polluants sur la santé des ours polaires. On a accès pour une vingtaine de trios (un mère et sa portée de deux enfants) à deux types de données omiques:
+
+- Données transciptomiques
+- Diverses mesures cliniques numériques - on suppose que ces données sont le poids, la taille & le taux d'exposition.
+
+> Projection on Latent Structures
+
+La PLS va nous permettre de dégager via les composantes les possibles corrélations entre l'expression génétique et les mesures cliniques.
+
+```
+pls.result = pls(X = rna, Y = data, ncomp = 3)
+```
+
+avec:
+
+- rna: matrice des données transcriptomiques
+- data: matrice mesures cliniques
+
+> Projection on Latent Structures
+
+Dans un deuxième temps, on va essayer de déterminer si les données transciptomiques et les diverses mesures cliniques (poides et taille) permettent de retrouver nos trois groupes d'échantillon qui sont :
+
+- Ours faiblement exposé
+- Ours moyennement exposé
+- Ours fortement exposé
+
+```
+plsda.result = plsda(matrix, Y, ncomp = 2)
+```
+
+avec:
+
+- matrix: matrice des données transcriptomiques, poids et taille
+- Y: variable qualitative taux d'exposition à 3 classes - faible, moyen & élevé
+
+
+
 transcriptomique
 Groupe témoin échantillon sans pollution ?
 traiter différemment la mère et les enfants
