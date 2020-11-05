@@ -344,8 +344,8 @@ circosPlot(block.splsda.keepX, cutoff = 0.5)
 
 Nous travaillons ici sur les effets de l'exposition à des polluants sur la santé des ours polaires. On a accès pour une vingtaine de trios (une mère et sa portée de deux enfants) à deux types de données omiques:
 
-- des données transcriptomiques
-- Diverses mesures cliniques numériques - on va supposer que ces données sont par exemple le poids, la taille...
+- Des données transcriptomiques
+- Diverses mesures cliniques numériques - on va supposer que ces données sont par exemple le poids, la taille, etc.
 - On va également admettre que l'on a accès au taux d'exposition aux polluants pour chaque ours polaire.
 
 On choisit de considérer le taux d'exposition au polluant comme une donnée qualitative à trois niveaux, pour diviser nos données sur les ours polaires en trois groupes :
@@ -365,8 +365,8 @@ pls.result = pls(X = mrna, Y = clinical_data)
 
 avec:
 
-- rna: matrice des données transcriptomiques
-- data: matrice mesures cliniques
+- mrna: matrice des données transcriptomiques
+- clinical_data: matrice des mesures cliniques
 
 Cette approche peut nous permettre dans un premier temps d'évaluer la covariance entre nos deux types de données, et d'observer si, sans connaître les groupes de sortie, on peut tout de même retrouver les groupes exposés à de plus ou moins forts taux de pollution.
 Il est possible pour savoir si ces groupes sont retrouvés de représenter nos individus sur un graphe selon les deux premières composantes calculées par la pls par exemple, et de colorer les individus selon les groupes choisis.
@@ -377,12 +377,12 @@ Il est possible pour savoir si ces groupes sont retrouvés de représenter nos i
 
 On a donc,
 ```
-plsda.result = plsda(matrix, Y, ncomp = 2)
+plsda.result = plsda(data, Y, ncomp = 2)
 ```
 
 avec:
 
-- matrix: matrice des données transcriptomiques, poids et taille
+- data: matrice des données transcriptomiques, des mesures cliniques (poids, taille, etc.)
 - Y: variable qualitative taux d'exposition à 3 classes - faible, moyen & élevé - transformée en vecteur one-hot
 
 Avec les résultats de cette analyse, nous pouvons comme précédemment projeter les individus sur un graphique à deux dimensions, selon les composantes expliquant la plus grande variabilité, et encore une fois colorer les individus selon les groupes.
